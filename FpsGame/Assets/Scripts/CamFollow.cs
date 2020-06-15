@@ -10,7 +10,7 @@ public class CamFollow : MonoBehaviour
     
     public Transform target1st;
     public Transform target3rd;
-    bool isFPS;
+    bool isFPS = true;
 
     // Start is called before the first frame update
     void Start()
