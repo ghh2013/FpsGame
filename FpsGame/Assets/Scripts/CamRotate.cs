@@ -19,19 +19,21 @@ public class CamRotate : MonoBehaviour
     {
         float h = Input.GetAxis("Mouse X");
         float v = Input.GetAxis("Mouse Y");
-        Vector3 dir = new Vector3(-v, h, 0);
-        transform.Rotate(dir * speed * Time.deltaTime);
+        //Vector3 dir = new Vector3(-v, h, 0);
+        //transform.Rotate(dir * speed * Time.deltaTime);
 
-        transform.eulerAngles += dir * speed * Time.deltaTime;
+        //transform.position += dir * speed * Time.deltaTime;
+        //transform.eulerAngles += dir * speed * Time.deltaTime;
 
-        Vector3 angle = transform. eulerAngles;
-        angle += dir * speed * Time.deltaTime;
-        if (angle.x)
-        {
+        //Vector3 angle = transform. eulerAngles;
+        //angle += dir * speed * Time.deltaTime;
+        //if (angle.x > 60) angle.x = 60;
+        //if (angle.x < -60) angle.x = -60;
+        //transform.eulerAngles = angle;
 
-        }
         angleX += h * speed * Time.deltaTime;
         angleY += v * speed * Time.deltaTime;
         angleY = Mathf.Clamp(angleY, -60, 60);
+        transform.eulerAngles = new Vector3(-angleY, angleX, 0);
     }
 }

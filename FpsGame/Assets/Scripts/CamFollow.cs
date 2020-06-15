@@ -9,7 +9,7 @@ public class CamFollow : MonoBehaviour
     public float speed = 5.0f;
     
     public Transform target1st;
-    public Transform target3st;
+    public Transform target3rd;
     bool isFPS;
 
     // Start is called before the first frame update
@@ -38,6 +38,16 @@ public class CamFollow : MonoBehaviour
         if (Input.GetKeyDown("3"))
         {
             isFPS = false;
+        }
+
+        if(isFPS)
+        {
+            transform.position = target1st.position;
+
+        }
+        else
+        {
+            transform.position = target3rd.position;
         }
 
     }

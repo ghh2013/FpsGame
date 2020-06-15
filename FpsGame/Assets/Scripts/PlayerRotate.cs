@@ -17,20 +17,7 @@ public class PlayerRotate : MonoBehaviour
     private void Rotate()
     {
         float h = Input.GetAxis("Mouse X");
-        
-        Vector3 dir = new Vector3(-v, h, 0);
-        transform.Rotate(dir * speed * Time.deltaTime);
-
-        transform.eulerAngles += dir * speed * Time.deltaTime;
-
-        Vector3 angle = transform.eulerAngles;
-        angle += dir * speed * Time.deltaTime;
-        if (angle.x)
-        {
-
-        }
         angleX += h * speed * Time.deltaTime;
-        angleY += v * speed * Time.deltaTime;
-        angleY = Mathf.Clamp(angleY, -60, 60);
+        transform.eulerAngles = new Vector3(0, angleX, 0);
     }
 }
