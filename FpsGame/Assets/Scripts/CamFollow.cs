@@ -6,7 +6,7 @@ using UnityEngine;
 public class CamFollow : MonoBehaviour
 {
     //public Transform target;
-    public float speed = 5.0f;
+    public float speed = 10.0f;
     
     public Transform target1st;
     public Transform target3rd;

@@ -25,6 +25,7 @@ public class CamRotate : MonoBehaviour
         //transform.position += dir * speed * Time.deltaTime;
         //transform.eulerAngles += dir * speed * Time.deltaTime;
 
+        
         //Vector3 angle = transform. eulerAngles;
         //angle += dir * speed * Time.deltaTime;
         //if (angle.x > 60) angle.x = 60;
