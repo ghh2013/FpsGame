@@ -15,35 +15,39 @@ public class EnemyFSM : MonoBehaviour
 
     #region "Idle 상태에 필요한변수들"
 
-    Transform playerTr;
-
     #endregion
-    #region "Move 상태에 필요한변수들"
-    public float moveSpeed = 5.0f;
+    #region "Move 상태에 필요한변수들"   
     #endregion
-    #region "Attack 상태에 필요한변수들"
-    public float attSpeed = 5.0f;
+    #region "Attack 상태에 필요한변수들"   
     #endregion
-    #region "Return 상태에 필요한변수들"
-    Transform enemyTr;
+    #region "Return 상태에 필요한변수들"    
     #endregion
     #region "Damaged 상태에 필요한변수들"
     #endregion
     #region "Die 상태에 필요한변수들"
     #endregion
+    public float findRange = 15f;
+    public float moveRange = 30f;
+    public float attackRange = 2f;
+    Vector3 startPoint;
+    Transform player;
+    CharacterController cc;
 
-    private void Awake()
-    {
-        GameObject player = GameObject.Find("player");
-        playerTr = player.GetComponent<Transform>();
+    int hp = 100;
+    int att = 5;
 
-        enemyTr = GetComponent<Transform>();
-    }
+    float speed = 5.0f;
+    float attTime = 2f;
+    float timer = 0f;
+    
     // Start is called before the first frame update
     void Start()
     {
         state = EnemyState.Idle;
-        
+
+        startPoint = transform.position;
+        player = GameObject.Find("Player").transform;
+        cc = GetComponent<CharacterController>();
     }
 
     // Update is called once per frame
@@ -64,10 +68,10 @@ public class EnemyFSM : MonoBehaviour
                 Return ();
                 break;
             case EnemyState.Damaged:
-                Damaged();
+                //Damaged();
                 break;
             case EnemyState.Die:
-                Die();
+                //Die();
                 break;
             
         }
@@ -76,35 +80,66 @@ public class EnemyFSM : MonoBehaviour
 private void Idle()
     {
         
-        if(Vector3.Distance(playerTr.position, transform.position) > 10.0f)
+        //Vector3 distance = transform.position - player.position;
+        //float distance = dir.magnitude;
+        //if(distance.magnitude<findRange )
+        //if(distance<findRange )
+
+        if(Vector3 .Distance (transform .position ,player .position )<findRange  )
         {
-            Debug.Log("적 대기");
+            state = EnemyState.Move;
+            print("상태전환 : Idle -> Move");
         }
-        else
-        {
-            Debug.Log("적 이동");
-        }
+        
     }
 
     private void Move()
     {
-        
-        if(Vector3.Distance (playerTr.position,transform.position) <= 10.0f)
+       
+        if(Vector3 .Distance (transform.position,startPoint) > moveRange)
         {
-            Debug.Log("적 이동");
+            state = EnemyState.Return;
+            print("상태전환 : Move-> Return");
+
         }
-        if(Vector3.Distance(playerTr.position,transform.position)>10.0f)
+        else if (Vector3.Distance(transform.position,player.position) > attackRange)
         {
-            Debug.Log("적 대기");
+            Vector3 dir = (player.position - transform.position).normalized;
+            //dir.Normalize();
+
+            //transform.forward = dir;
+            //transform.LookAt(player);
+            //transform.forward = Vector3.Lerp(transform.forward, dir, 10 * Time.deltaTime);
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
+            //cc.Move(dir * speed * Time.deltaTime);
+
+            cc.SimpleMove(dir * speed);
+        }
+        else
+        {
+            state = EnemyState.Attack;
+            print("상태전환 : Move ->Attack");
         }
     }
 
     private void Attack()
     {
         
-        if (Vector3.Distance(playerTr.position, transform.position) <= 1.0f)
+        if (Vector3.Distance(transform.position,player.position ) < attackRange )
         {
-            Debug.Log("적 공격");
+            timer += Time.deltaTime;
+            if(timer > attTime)
+            {
+                print("공격");
+
+                timer = 0f;
+            }
+        }
+        else
+        {
+            state = EnemyState.Move;
+            print("상태전환 : Attack -> Move");
+            timer = 0f;
         }
         //공격범위안에 일정시간각격으로
         //공격범위를 벗어나면 이동
@@ -116,23 +151,64 @@ private void Idle()
     private void Return()
     {
         
-        if(Vector3.Distance(enemyTr.position,transform.position) >= 30.0f)
-        {
-            Debug.Log("적 복귀");
-        }
+        
         //일정범위30미터
         //상태변경
         //상태전환 출력tranditional
+        if(Vector3 .Distance (transform .position ,startPoint )>0.1)
+        {
+            Vector3 dir = (startPoint - transform.position).normalized ;
+            cc.SimpleMove(dir * speed);
+        }
+        else
+        {
+            transform.position = startPoint;
+            state = EnemyState.Idle;
+            print("상태전환 : Return -> Idle");
+        }
+    }
+
+    public void hitDamage(int value)
+    {
+        if (state == EnemyState.Damaged || state == EnemyState.Die) return;
+
+        hp -= value;
+
+        if(hp>0)
+        {
+            state = EnemyState.Damaged;
+            print("상태전환 : AnyState -> Damaged");
+            print("HP : " + hp);
+
+            Damaged();
+        }
+        else
+        {
+            state = EnemyState.Die;
+            print("상태전환 : AnyState -> Die");
+
+            Die();
+        }
     }
 
     private void Damaged()
     {
-        
+
         //코루틴
         //몬스터 체력이 1 이상
         //다시 이전상태로 변경
         //상태변경
         //상태전환 출력
+
+        StartCoroutine(DamageProc());
+    }
+
+    IEnumerator DamageProc()
+    {
+        yield return new WaitForSeconds(1.0f);
+
+        state = EnemyState.Move;
+        print("상태전환 : Damaged -> Move");
     }
 
     private void Die()
@@ -142,5 +218,28 @@ private void Idle()
         //몬스터 오브젝트 삭제
         //상태변경
         //상태전환 출력(죽었다)
+        StopAllCoroutines();
+
+        StartCoroutine(DieProc());
+    }
+
+    IEnumerator DieProc()
+    {
+        cc.enabled = false;
+
+        yield return new WaitForSeconds(2.0f);
+        print("죽었다");
+        Destroy(gameObject);
+    }
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, findRange );
+
+        Gizmos.color = Color.green ;
+        Gizmos.DrawWireSphere(startPoint , moveRange);
     }
 }

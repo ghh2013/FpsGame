@@ -31,6 +31,12 @@ public class PlayerFire : MonoBehaviour
             if(Physics.Raycast(ray, out hitInfo))
             {
                 print("충돌오브젝트:" + hitInfo.collider.name);
+
+                EnemyFSM enemy = hitInfo.collider.GetComponent<EnemyFSM>();
+                enemy.hitDamage(10);
+                //hitInfo.collider.gameObject.GetComponent<EnemyFSM>().hitDamage(10);
+                //hitInfo.transform.GetComponent<EnemyFSM>().hitDamage(10);
+
                 GameObject bulletImpact = Instantiate(bulletImpactFactory);
                 bulletImpact.transform.position = hitInfo.point;
                 bulletImpact.transform.forward = hitInfo.normal;
