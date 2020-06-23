@@ -30,8 +30,11 @@ public class EnemyFSM : MonoBehaviour
     public float moveRange = 30f;
     public float attackRange = 2f;
     Vector3 startPoint;
+    //Quaternion startRotation;
     Transform player;
     CharacterController cc;
+
+    Animator anim;
 
     int hp = 100;
     int att = 5;
@@ -48,6 +51,8 @@ public class EnemyFSM : MonoBehaviour
         startPoint = transform.position;
         player = GameObject.Find("Player").transform;
         cc = GetComponent<CharacterController>();
+
+        anim = GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -89,6 +94,8 @@ private void Idle()
         {
             state = EnemyState.Move;
             print("상태전환 : Idle -> Move");
+
+            anim.SetTrigger("Move");
         }
         
     }
@@ -100,6 +107,8 @@ private void Idle()
         {
             state = EnemyState.Return;
             print("상태전환 : Move-> Return");
+
+            anim.SetTrigger("Return");
 
         }
         else if (Vector3.Distance(transform.position,player.position) > attackRange)
@@ -119,6 +128,8 @@ private void Idle()
         {
             state = EnemyState.Attack;
             print("상태전환 : Move ->Attack");
+
+            anim.SetTrigger("Attack");
         }
     }
 
@@ -131,8 +142,9 @@ private void Idle()
             if(timer > attTime)
             {
                 print("공격");
-
+                
                 timer = 0f;
+                anim.SetTrigger("Attack");
             }
         }
         else
@@ -140,6 +152,7 @@ private void Idle()
             state = EnemyState.Move;
             print("상태전환 : Attack -> Move");
             timer = 0f;
+            anim.SetTrigger("Move");
         }
         //공격범위안에 일정시간각격으로
         //공격범위를 벗어나면 이동
@@ -157,14 +170,18 @@ private void Idle()
         //상태전환 출력tranditional
         if(Vector3 .Distance (transform .position ,startPoint )>0.1)
         {
-            Vector3 dir = (startPoint - transform.position).normalized ;
+            Vector3 dir = (startPoint - transform.position).normalized;
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
             cc.SimpleMove(dir * speed);
         }
         else
         {
             transform.position = startPoint;
+            transform.rotation = Quaternion.identity;
+
             state = EnemyState.Idle;
             print("상태전환 : Return -> Idle");
+            anim.SetTrigger("Idle");
         }
     }
 
@@ -179,14 +196,14 @@ private void Idle()
             state = EnemyState.Damaged;
             print("상태전환 : AnyState -> Damaged");
             print("HP : " + hp);
-
+            anim.SetTrigger("Damaged");
             Damaged();
         }
         else
         {
             state = EnemyState.Die;
             print("상태전환 : AnyState -> Die");
-
+            anim.SetTrigger("Die");
             Die();
         }
     }
@@ -229,6 +246,7 @@ private void Idle()
 
         yield return new WaitForSeconds(2.0f);
         print("죽었다");
+        
         Destroy(gameObject);
     }
     private void OnDrawGizmos()
