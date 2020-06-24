@@ -226,6 +226,7 @@ private void Idle()
 
         state = EnemyState.Move;
         print("상태전환 : Damaged -> Move");
+        anim.SetTrigger("Move");
     }
 
     private void Die()
