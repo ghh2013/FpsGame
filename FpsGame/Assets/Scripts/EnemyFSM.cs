@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyFSM : MonoBehaviour
 {
@@ -41,8 +42,10 @@ public class EnemyFSM : MonoBehaviour
 
     float speed = 5.0f;
     float attTime = 2f;
-    float timer = 0f;
-    
+    float timer = 0f;   
+
+    NavMeshAgent agent;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -50,9 +53,12 @@ public class EnemyFSM : MonoBehaviour
 
         startPoint = transform.position;
         player = GameObject.Find("Player").transform;
-        cc = GetComponent<CharacterController>();
+        //cc = GetComponent<CharacterController>();
 
         anim = GetComponentInChildren<Animator>();
+
+        agent = GetComponent<NavMeshAgent>();
+        agent.enabled = false;
     }
 
     // Update is called once per frame
@@ -102,6 +108,7 @@ private void Idle()
 
     private void Move()
     {
+        if (!agent.enabled) agent.enabled = true;
        
         if(Vector3 .Distance (transform.position,startPoint) > moveRange)
         {
@@ -113,16 +120,17 @@ private void Idle()
         }
         else if (Vector3.Distance(transform.position,player.position) > attackRange)
         {
-            Vector3 dir = (player.position - transform.position).normalized;
+            agent.SetDestination(player.position);
+            //Vector3 dir = (player.position - transform.position).normalized;
             //dir.Normalize();
 
             //transform.forward = dir;
             //transform.LookAt(player);
             //transform.forward = Vector3.Lerp(transform.forward, dir, 10 * Time.deltaTime);
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
+            //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
             //cc.Move(dir * speed * Time.deltaTime);
 
-            cc.SimpleMove(dir * speed);
+            //cc.SimpleMove(dir * speed);
         }
         else
         {
@@ -135,9 +143,12 @@ private void Idle()
 
     private void Attack()
     {
-        
+        agent.enabled = false;
+
         if (Vector3.Distance(transform.position,player.position ) < attackRange )
         {
+            transform.LookAt(player.position);
+
             timer += Time.deltaTime;
             if(timer > attTime)
             {
@@ -170,9 +181,11 @@ private void Idle()
         //상태전환 출력tranditional
         if(Vector3 .Distance (transform .position ,startPoint )>0.1)
         {
-            Vector3 dir = (startPoint - transform.position).normalized;
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
-            cc.SimpleMove(dir * speed);
+            agent.SetDestination(startPoint);
+
+            //Vector3 dir = (startPoint - transform.position).normalized;
+            //transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), 10 * Time.deltaTime);
+            //cc.SimpleMove(dir * speed);
         }
         else
         {
@@ -182,6 +195,8 @@ private void Idle()
             state = EnemyState.Idle;
             print("상태전환 : Return -> Idle");
             anim.SetTrigger("Idle");
+
+            agent.enabled = false;
         }
     }
 
@@ -244,6 +259,8 @@ private void Idle()
     IEnumerator DieProc()
     {
         cc.enabled = false;
+
+        agent.enabled = false;
 
         yield return new WaitForSeconds(2.0f);
         print("죽었다");
